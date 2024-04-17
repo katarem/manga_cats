@@ -1,0 +1,15 @@
+meta {
+  name: get pages by chapterid
+  type: http
+  seq: 6
+}
+
+get {
+  url: https://api.mangadex.org/at-home/server/{{chapterId}}
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  chapterId: d617e17c-389f-4fa9-a44d-bc9b0cb274f5
+}

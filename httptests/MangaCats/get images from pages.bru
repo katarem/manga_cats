@@ -1,0 +1,18 @@
+meta {
+  name: get images from pages
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BASE_URL}}/{{QUALITY}}/{{HASH}}/{{QUALITY_FILE}}
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  BASE_URL: https://uploads.mangadex.org
+  HASH: b81cb5bfeffb7edf11066fe32689fe17
+  QUALITY_FILE: n1-fb6eed711dd6f85b4d4a91fad73942511434e6bf555c08fe4be1b823ee2466bc.jpg
+  QUALITY: data
+}

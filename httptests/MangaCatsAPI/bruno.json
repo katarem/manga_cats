@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "MangaCatsAPI",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
