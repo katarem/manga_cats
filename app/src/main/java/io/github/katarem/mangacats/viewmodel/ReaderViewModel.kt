@@ -32,13 +32,10 @@ class ReaderViewModel : ViewModel(){
 
     val saveData = true
 
-    private lateinit var imageReqBuilder: ImageRequest.Builder
-
     private var manga = MutableStateFlow(null as MangaDAO?)
     private val user = SETTINGS.getUser()
     private var chapters = MutableStateFlow(mutableListOf<ChapterDTO>())
     private var _baseUrl = MutableStateFlow("")
-    private lateinit var imageBuilder: ImageLoader
     private var _chapterPages = MutableStateFlow(ChapterPages())
     val chapterPages = _chapterPages.asStateFlow()
 
@@ -47,13 +44,8 @@ class ReaderViewModel : ViewModel(){
     private var _pageIndex = MutableStateFlow(0)
     val pageIndex = _pageIndex.asStateFlow()
 
-    private var _page = MutableStateFlow(null as ImageResult?)
-    val page = _page.asStateFlow()
     private var _chapterIndex = MutableStateFlow(0)
     val chapterIndex = _chapterIndex.asStateFlow()
-
-    private var _pages = MutableStateFlow(mutableListOf<ImageResult>())
-    val pages = _pages.asStateFlow()
 
     private var _currentPage = MutableStateFlow("")
     val currentPage = _currentPage.asStateFlow()
@@ -61,12 +53,21 @@ class ReaderViewModel : ViewModel(){
     private var _currentChapter = MutableStateFlow("")
     val currentChapter = _currentChapter.asStateFlow()
 
-    fun setPageIndex(newValue: Int){
+    fun pageForward(){
         viewModelScope.launch {
-            if(newValue < _chapterPages.value.data.size && newValue > -1){
-                val url = getLink()
-                _page.update { loadImage(url) }
-                _pageIndex.update { newValue }
+            if( _pageIndex.value < _chapterPages.value.data.size){
+                _pageIndex.value += 1
+                getLink()
+            }
+            Log.d("getPage","paginaActual = ${_pageIndex.value} MODO ${SETTINGS.getReadingMode()}")
+        }
+    }
+
+    fun pageBackward(){
+        viewModelScope.launch {
+            if( _pageIndex.value > 0){
+                _pageIndex.value -= 1
+                getLink()
             }
             Log.d("getPage","paginaActual = ${_pageIndex.value} MODO ${SETTINGS.getReadingMode()}")
         }
@@ -84,49 +85,43 @@ class ReaderViewModel : ViewModel(){
                         Log.d("toChapter","$response")
                         _chapterPages.update { response.chapterPages!! }
                         _baseUrl.update { response.baseUrl!! }
-                        setPageIndex(0)
+                        _pageIndex.update { 0 }
+                        getLink()
                     }.await()
                     _status.update { Status.SUCCESS }
                 }
             }
         }
     }
-
-    suspend fun loadImage(url: String): ImageResult{
-        return viewModelScope.async {
-            return@async imageBuilder.execute(imageReqBuilder.data(url).build())
-        }.await()
-    }
-
-
-    fun preloadImages(context: Context, urls: List<String>): Deferred<List<ImageResult>>{
-        return viewModelScope.async {
-            val loader = Coil.imageLoader(context)
-            return@async urls.map {
-                loader.executeBlocking(ImageRequest.Builder(context).data(it).build())
-            }
-        }
-    }
-
-    fun setupImageLoader(context: Context){
-        imageBuilder = ImageLoader(context)
-        imageReqBuilder = ImageRequest.Builder(context)
-    }
-
     fun setManga(mangaDAO: MangaDAO){
         manga.update { mangaDAO }
         chapters.update { mangaDAO.chapters }
     }
-
 
     fun getLink(): String{
         _currentPage.update {
             if(saveData)"${_baseUrl.value}/data-saver/${_chapterPages.value.hash}/${_chapterPages.value.dataSaver[_pageIndex.value]}"
             else "${_baseUrl.value}/data/${_chapterPages.value.hash}/${_chapterPages.value.data[_pageIndex.value]}"
         }
-        Log.d("toPage", _currentPage.value)
-        Log.d("RealImageLoader","pagina cargada")
+        Log.d("loadImage", "pagina cargada")
         return _currentPage.value
     }
+
+    fun getAllPages(): List<String> {
+        val deferredResult = viewModelScope.async {
+            List(_chapterPages.value.data.size) { index ->
+                "${_baseUrl.value}/data-saver/${_chapterPages.value.hash}/${_chapterPages.value.dataSaver[index]}"
+            }
+        }
+
+        var pages: List<String> = emptyList()
+
+        viewModelScope.launch {
+            pages = deferredResult.await()
+        }
+
+        return pages
+    }
+
 
 }

@@ -28,6 +28,7 @@ import coil.compose.AsyncImage
 import io.github.katarem.mangacats.components.CustomTextField
 import io.github.katarem.mangacats.components.DisplayButton
 import io.github.katarem.mangacats.nav.Routes
+import io.github.katarem.mangacats.utils.CURRENT_VERSION
 import io.github.katarem.mangacats.utils.SETTINGS
 import io.github.katarem.mangacats.utils.Status
 import io.github.katarem.mangacats.utils.profileDefault
@@ -121,6 +122,7 @@ fun UserControls(credentialsViewModel: CredentialsViewModel, navController: NavC
     } else Button(onClick = { navController?.navigate(Routes.LOGIN) }) {
         Text(text = "Log In")
     }
+    Text(text = "Version $CURRENT_VERSION")
 }
 
 
@@ -154,8 +156,14 @@ private fun setReadingMode(mode: ReadingMode) {
 private fun setLanguage(lang: Languages) {
     val selectedLang = when (lang) {
         Languages.SPANISH -> "es"
-        Languages.ENGLISH -> "en"
-        Languages.JAPANESE -> "jp"
+        Languages.AMERICAN_ENGLISH -> "en"
+        Languages.AMERCIAN_SPANISH -> "es-la"
+        Languages.FRENCH -> "fr"
+        Languages.PORTUGUESE -> "pt-br"
+        Languages.UK_ENGLISH -> "uk"
+        Languages.RUSSIAN -> "ru"
+        Languages.DEUTSCH -> "de"
+        Languages.ITALIAN -> "it"
     }
     SETTINGS.setMangaLang(selectedLang)
 }
@@ -167,6 +175,12 @@ private enum class ReadingMode {
 
 private enum class Languages {
     SPANISH,
-    ENGLISH,
-    JAPANESE
+    AMERCIAN_SPANISH,
+    AMERICAN_ENGLISH,
+    UK_ENGLISH,
+    FRENCH,
+    PORTUGUESE,
+    RUSSIAN,
+    DEUTSCH,
+    ITALIAN
 }

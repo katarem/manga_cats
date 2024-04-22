@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -53,10 +54,7 @@ import kotlinx.coroutines.Dispatchers
 fun MangaReader(navController: NavController?, readerViewModel: ReaderViewModel){
     val isCascade = readerViewModel.isCascade
     val chapterIndex = readerViewModel.chapterIndex.collectAsState()
-    val context = LocalContext.current
-    LaunchedEffect(Unit){
-        readerViewModel.setupImageLoader(context)
-    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -85,8 +83,7 @@ fun MangaReader(navController: NavController?, readerViewModel: ReaderViewModel)
 
 @Composable
 fun ReaderByPage(readerViewModel: ReaderViewModel, modifier: Modifier){
-    //val currentPage = readerViewModel.currentPage.collectAsState()
-    val page = readerViewModel.page.collectAsState()
+    val page = readerViewModel.currentPage.collectAsState()
     Column(
         modifier = modifier
     ) {
@@ -111,7 +108,7 @@ fun ReaderByPage(readerViewModel: ReaderViewModel, modifier: Modifier){
 
 @Composable
 fun ReaderByCascade(readerViewModel: ReaderViewModel, modifier: Modifier){
-    val pages = readerViewModel.chapterPages.collectAsState()
+    val pages = readerViewModel.getAllPages()
     val apiStatus = readerViewModel.status.collectAsState()
     Column(modifier = modifier) {
         if(apiStatus.value == Status.LOADING)
@@ -126,10 +123,8 @@ fun ReaderByCascade(readerViewModel: ReaderViewModel, modifier: Modifier){
             else LazyColumn(modifier = Modifier
             .fillMaxSize()
             .weight(3f), horizontalAlignment = Alignment.CenterHorizontally){
-                itemsIndexed(pages.value.data){index,_->
-                    readerViewModel.setPageIndex(index)
-                    SubcomposeAsyncImage(model = ImageRequest.Builder(LocalContext.current)
-                        .data(readerViewModel.getLink()).crossfade(true).dispatcher(Dispatchers.Default).build(),
+                items(pages){
+                    SubcomposeAsyncImage(model = it,
                         loading = {
                             CircularProgressIndicator(
                                 color = MaterialTheme.colorScheme.secondary,
@@ -166,7 +161,6 @@ fun ReaderControls(readerViewModel: ReaderViewModel, modifier: Modifier){
                 .weight(1f)
                 .fillMaxHeight()
                 .clickable {
-                    context.imageLoader.diskCache?.clear()
                     context.imageLoader.memoryCache?.clear()
                     readerViewModel.setChapterIndex(chapterIndex.value - 1)
                 })
@@ -174,13 +168,13 @@ fun ReaderControls(readerViewModel: ReaderViewModel, modifier: Modifier){
                 Icon(painter = painterResource(id = R.drawable.arrow_left), contentDescription = null, modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .clickable { readerViewModel.setPageIndex(pageIndex.value - 1) })
+                    .clickable { readerViewModel.pageBackward() })
 
                 Text(text = "${pageIndex.value+1}",fontSize = 25.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 Icon(painter = painterResource(id = R.drawable.arrow_right), contentDescription = null,  modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .clickable { readerViewModel.setPageIndex(pageIndex.value + 1) })
+                    .clickable { readerViewModel.pageForward() })
             }
             Icon(painter = painterResource(id = R.drawable.double_arrow_right), contentDescription = null, modifier = Modifier
                 .weight(1f)
