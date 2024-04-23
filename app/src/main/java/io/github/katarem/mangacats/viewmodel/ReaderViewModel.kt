@@ -28,7 +28,6 @@ class ReaderViewModel : ViewModel(){
 
     private val service = Retrofit.mangadexService
     private val apiService = Retrofit.mangaService
-    val isCascade = SETTINGS.getReadingMode() == "cascade"
 
     val saveData = true
 

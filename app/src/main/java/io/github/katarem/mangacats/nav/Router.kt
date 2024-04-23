@@ -8,12 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
 import io.github.katarem.mangacats.api.Retrofit
 import io.github.katarem.mangacats.components.BottomBar
+import io.github.katarem.mangacats.dao.local.LocalDatabase
 import io.github.katarem.mangacats.dto.MangaDAO
 import io.github.katarem.mangacats.screens.CollectionScreen
 import io.github.katarem.mangacats.screens.LoginScreen
@@ -41,6 +44,13 @@ fun Router(){
     val collectionViewModel: CollectionViewModel = viewModel()
     val navController = rememberNavController()
     val readerViewModel: ReaderViewModel = viewModel()
+
+    val db = Room.databaseBuilder(
+        LocalContext.current,
+        LocalDatabase::class.java, "mangacats_local"
+    ).build()
+
+
 //    LaunchedEffect(Unit){
 //        val isLoggedIn = credentialsViewModel.setUser(SETTINGS.getUser())
 //        if(isLoggedIn) {

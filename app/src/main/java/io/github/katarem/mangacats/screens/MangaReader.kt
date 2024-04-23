@@ -46,13 +46,14 @@ import coil.request.ImageResult
 import coil.size.Scale
 import io.github.katarem.mangacats.R
 import io.github.katarem.mangacats.nav.Routes
+import io.github.katarem.mangacats.utils.SETTINGS
 import io.github.katarem.mangacats.utils.Status
 import io.github.katarem.mangacats.viewmodel.ReaderViewModel
 import kotlinx.coroutines.Dispatchers
 
 @Composable
 fun MangaReader(navController: NavController?, readerViewModel: ReaderViewModel){
-    val isCascade = readerViewModel.isCascade
+    val isCascade = SETTINGS.getReadingMode() == "cascade"
     val chapterIndex = readerViewModel.chapterIndex.collectAsState()
 
     Column(
@@ -148,7 +149,7 @@ fun ReaderByCascade(readerViewModel: ReaderViewModel, modifier: Modifier){
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun ReaderControls(readerViewModel: ReaderViewModel, modifier: Modifier){
-    val isCascade = readerViewModel.isCascade
+    val isCascade = SETTINGS.getReadingMode() == "cascade"
     val pageIndex = readerViewModel.pageIndex.collectAsState()
     val chapterIndex = readerViewModel.chapterIndex.collectAsState()
     val context = LocalContext.current
