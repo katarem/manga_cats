@@ -2,6 +2,7 @@ package io.github.katarem.mangacats.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
@@ -54,18 +55,20 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.Placeholder
 import io.github.katarem.mangacats.R
+import io.github.katarem.mangacats.dao.local.LocalDatabase
 import io.github.katarem.mangacats.nav.Routes
 import io.github.katarem.mangacats.utils.SETTINGS
 import io.github.katarem.mangacats.utils.Status
 import io.github.katarem.mangacats.viewmodel.ReaderViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun MangaReader(navController: NavController?, readerViewModel: ReaderViewModel){
     val isCascade = SETTINGS.getReadingMode() == "cascade"
     val chapterIndex = readerViewModel.chapterIndex.collectAsState()
-
+    Log.d("reader","cap ${chapterIndex.value}")
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -91,7 +94,6 @@ fun MangaReader(navController: NavController?, readerViewModel: ReaderViewModel)
 
 }
 
-
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ReaderByPage(readerViewModel: ReaderViewModel, modifier: Modifier) {
@@ -99,21 +101,6 @@ fun ReaderByPage(readerViewModel: ReaderViewModel, modifier: Modifier) {
     Column(
         modifier = modifier
     ) {
-//        SubcomposeAsyncImage(
-//            model = page.value,
-//            loading = {
-//                CircularProgressIndicator(
-//                    color = MaterialTheme.colorScheme.secondary,
-//                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-//                )
-//            },
-//            contentDescription = "", modifier = Modifier
-//                .weight(3f)
-//                .fillMaxWidth(), contentScale = ContentScale.FillWidth)
-//        ReaderControls(readerViewModel = readerViewModel, modifier = Modifier
-//            .weight(0.3f)
-//            .fillMaxWidth())
-//    }
         GlideImage(
             model = page.value,
             contentDescription = null,
@@ -143,16 +130,6 @@ fun ReaderByCascade(readerViewModel: ReaderViewModel, modifier: Modifier){
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 items(pages.value) {
-//                    SubcomposeAsyncImage(model = it,
-//                        loading = {
-//                            CircularProgressIndicator(
-//                                color = MaterialTheme.colorScheme.secondary,
-//                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-//                            )
-//                        },
-//                        contentDescription = "", modifier = Modifier.fillMaxWidth(),
-//                        contentScale = ContentScale.FillWidth)
-//                }
                     GlideImage(
                         model = it,
                         contentDescription = null,
@@ -172,15 +149,37 @@ fun ReaderByCascade(readerViewModel: ReaderViewModel, modifier: Modifier){
 
 }
 
-@OptIn(ExperimentalCoilApi::class)
-@SuppressLint("SuspiciousIndentation")
 @Composable
 fun ReaderControls(readerViewModel: ReaderViewModel, modifier: Modifier, scrollState: LazyListState?){
+    val mangaService = LocalDatabase.instance.mangaDao()
     val isCascade = SETTINGS.getReadingMode() == "cascade"
     val pageIndex = readerViewModel.pageIndex.collectAsState()
     val chapterIndex = readerViewModel.chapterIndex.collectAsState()
     val coroutine = rememberCoroutineScope()
     val context = LocalContext.current
+    LaunchedEffect(Dispatchers.Main){
+        scrollState?.scrollToItem(0)
+    }
+    val onAsyncClick: (index: Int) -> Unit = {index ->
+            coroutine.launch(Dispatchers.IO) {
+                val manga = readerViewModel.manga.value
+                Log.d("sync", "cargamos cap")
+                manga?.let {
+                    val isSuscribed = mangaService.getSuscribedMangas().firstOrNull { m -> m.uuid == it.id } != null
+                    Log.d("sync", "cover del manga: ${it.cover}")
+                    val localManga = it.toLocalManga(isSuscribed, currentChapter = index)
+                    mangaService.updateManga(localManga)
+                    Log.d("sync","manga actualizado de capitulo: ${localManga.currentChapter}")
+                    Log.d("sync","cover guardad: ${localManga.cover_art}")
+                }
+                withContext(Dispatchers.Main){
+                    readerViewModel.clearCache(context)
+                }
+                readerViewModel.emptyPages()
+                readerViewModel.setChapterIndex(index)
+            }
+        }
+
         Row(
             modifier = modifier,
             horizontalArrangement = Arrangement.Center,
@@ -190,12 +189,8 @@ fun ReaderControls(readerViewModel: ReaderViewModel, modifier: Modifier, scrollS
                 .weight(1f)
                 .fillMaxHeight()
                 .clickable {
-                    readerViewModel.emptyPages()
-                    readerViewModel.setChapterIndex(chapterIndex.value - 1)
-                    coroutine.launch {
-                        scrollState?.scrollToItem(0)
-                        readerViewModel.clearCache(context)
-                    }
+                    val newIndex = chapterIndex.value - 1
+                    onAsyncClick(newIndex)
                 })
             if(!isCascade){
                 Icon(painter = painterResource(id = R.drawable.arrow_left), contentDescription = null, modifier = Modifier
@@ -213,12 +208,8 @@ fun ReaderControls(readerViewModel: ReaderViewModel, modifier: Modifier, scrollS
                 .weight(1f)
                 .fillMaxHeight()
                 .clickable {
-                    readerViewModel.emptyPages()
-                    readerViewModel.setChapterIndex(chapterIndex.value + 1)
-                    coroutine.launch {
-                        scrollState?.scrollToItem(0)
-                        readerViewModel.clearCache(context)
-                    }
+                    val newIndex = chapterIndex.value + 1
+                    onAsyncClick(newIndex)
                 }
             )
         }

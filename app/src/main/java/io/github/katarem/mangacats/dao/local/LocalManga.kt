@@ -7,6 +7,8 @@ import androidx.room.PrimaryKey
 data class LocalManga(
     @PrimaryKey val uuid: String,
     @ColumnInfo(name = "title") val title: String,
+    @ColumnInfo(name = "cover_art") val cover_art: String,
+    @ColumnInfo(name = "suscribed") val suscribed: Boolean,
     @ColumnInfo(name = "currentChapter") val currentChapter: Int
 )
 

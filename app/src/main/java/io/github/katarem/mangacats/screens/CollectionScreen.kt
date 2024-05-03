@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,8 +35,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import io.github.katarem.mangacats.R
+import io.github.katarem.mangacats.dao.local.LocalManga
 import io.github.katarem.mangacats.dto.auth.Manga
 import io.github.katarem.mangacats.nav.Routes
+import io.github.katarem.mangacats.utils.SETTINGS
 import io.github.katarem.mangacats.viewmodel.CollectionViewModel
 import io.github.katarem.mangacats.viewmodel.SearchViewModel
 import kotlinx.coroutines.Dispatchers
@@ -44,70 +48,76 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.coroutines.coroutineContext
 
-typealias LambdaManga = (Manga) -> Unit
+typealias LambdaManga = (LocalManga) -> Unit
 
 @Composable
 fun CollectionScreen(navController: NavController?, vm: CollectionViewModel, search: SearchViewModel){
     val coroutineScope = rememberCoroutineScope()
     val suscribedMangas = vm.suscribedMangas.collectAsState()
     val recentMangas = vm.recentMangas.collectAsState()
+
+    val selectedLang = SETTINGS.getMangaLang()
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)
     ){
         Text(text = "Your Recent Mangas", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        if(recentMangas.value.size > 0)
             LazyRow{
-                items(recentMangas.value){
-                    MangaItem(manga = it){recent ->
+                items(recentMangas.value.asReversed()){
+                    MangaItem(modifier = Modifier.weight(1f),manga = it){recent ->
                         coroutineScope.launch {
-                            vm.setSelectedManga(recent).await()
-                            vm.fetchMangatoRead(search, navController!!)
+                            search.getManga(recent.uuid).await()
+                            search.getChaptersAsync(recent.uuid).await()
+                            navController?.navigate("${Routes.READER}/${recent.currentChapter}")
                         }
                     }
                 }
             }
-        else
+        if(recentMangas.value.isEmpty())
             Text(text = "You have no recent mangas yet :(", modifier = Modifier.padding(10.dp))
         Text(text = "Your Liked Mangas", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        if(suscribedMangas.value.size > 0)
             LazyRow{
-                items(suscribedMangas.value){
-                    MangaItem(manga = it){recent ->
+                items(suscribedMangas.value.asReversed()){
+                    MangaItem(modifier = Modifier.weight(1f),manga = it){suscribed ->
                         coroutineScope.launch {
-                            vm.setSelectedManga(recent).await()
-                            vm.fetchMangatoRead(search, navController!!)
+                            search.getManga(suscribed.uuid).await()
+                            search.getChaptersAsync(suscribed.uuid).await()
+                            navController?.navigate("${Routes.READER}/${suscribed.currentChapter}")
                         }
                     }
                 }
             }
-        else
+        if(suscribedMangas.value.isEmpty())
             Text(text = "You have no liked mangas yet :(", modifier = Modifier.padding(10.dp))
     }
 }
 
 
 @Composable
-fun MangaItem(manga: Manga, onClick: LambdaManga){
+fun MangaItem(modifier: Modifier,manga: LocalManga, onClick: LambdaManga){
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(10.dp)
             .clickable { onClick(manga) },
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Log.d("cover", "${manga.cover_art}")
         AsyncImage(model = manga.cover_art, contentDescription = "", modifier = Modifier
             .height(240.dp)
+            .width(180.dp)
             .background(Color.Blue),
-            contentScale = ContentScale.Inside
+            contentScale = ContentScale.FillBounds
         )
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = manga.title)
-            Text(text = "Ch. ${manga.currentChapter}")
+            val title = if(manga.title.length > 20) manga.title.substring(0 until 20) else manga.title
+            Text(text = title, overflow = TextOverflow.Ellipsis, maxLines = 2)
+            Text(text = "Ch. ${manga.currentChapter+1}")
         }
     }
 }

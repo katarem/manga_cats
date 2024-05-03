@@ -1,20 +1,16 @@
 package io.github.katarem.mangacats.components
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFrom
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,11 +18,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,11 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,12 +43,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import io.github.katarem.mangacats.R
-import io.github.katarem.mangacats.dto.MangaDAO
+import io.github.katarem.mangacats.dto.MangaDTO
 import io.github.katarem.mangacats.nav.Routes
-import org.jetbrains.annotations.Async
 
 typealias LambdaString = (String) -> Unit
-typealias LambdaManga = (MangaDAO) -> Unit
+typealias LambdaManga = (MangaDTO) -> Unit
 
 @Composable
 fun SearchBar(onSearch: LambdaString = {}){
@@ -92,7 +82,7 @@ fun SearchBar(onSearch: LambdaString = {}){
 }
 
 @Composable
-fun SearchList(onClick: LambdaManga, mangaList: List<MangaDAO>){
+fun SearchList(onClick: LambdaManga, mangaList: List<MangaDTO>){
     LazyColumn{
         itemsIndexed(mangaList){ _, manga ->
             SearchItem(manga, onClick)
@@ -102,7 +92,7 @@ fun SearchList(onClick: LambdaManga, mangaList: List<MangaDAO>){
 }
 
 @Composable
-fun SearchItem(manga: MangaDAO, onClick: LambdaManga){
+fun SearchItem(manga: MangaDTO, onClick: LambdaManga){
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp

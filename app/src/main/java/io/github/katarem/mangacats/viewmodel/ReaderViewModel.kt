@@ -2,23 +2,15 @@ package io.github.katarem.mangacats.viewmodel
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil.Coil
-import coil.ImageLoader
-import coil.executeBlocking
-import coil.request.ImageRequest
-import coil.request.ImageResult
 import com.bumptech.glide.Glide
 import io.github.katarem.mangacats.api.Retrofit
-import io.github.katarem.mangacats.dto.MangaDAO
+import io.github.katarem.mangacats.dto.MangaDTO
 import io.github.katarem.mangacats.dto.chapter.ChapterDTO
 import io.github.katarem.mangacats.dto.chapterpages.ChapterPages
 import io.github.katarem.mangacats.utils.SETTINGS
 import io.github.katarem.mangacats.utils.Status
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,8 +26,8 @@ class ReaderViewModel : ViewModel(){
 
     val saveData = true
 
-    private var manga = MutableStateFlow(null as MangaDAO?)
-    private val user = SETTINGS.getUser()
+    private var _manga = MutableStateFlow(null as MangaDTO?)
+    val manga = _manga.asStateFlow()
     private var chapters = MutableStateFlow(mutableListOf<ChapterDTO>())
     private var _baseUrl = MutableStateFlow("")
     private var _chapterPages = MutableStateFlow(ChapterPages())
@@ -105,9 +97,11 @@ class ReaderViewModel : ViewModel(){
             }
         }
     }
-    fun setManga(mangaDAO: MangaDAO){
-        manga.update { mangaDAO }
-        chapters.update { mangaDAO.chapters }
+    fun setManga(mangaDTO: MangaDTO){
+        _manga.value = mangaDTO
+        _manga.value?.cover = mangaDTO.cover
+        Log.d("sync","readerviewmodel cover ${manga.value?.cover}")
+        chapters.update { mangaDTO.chapters }
     }
 
     fun getLink(): String{

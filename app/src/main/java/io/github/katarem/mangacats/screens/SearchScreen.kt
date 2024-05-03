@@ -13,7 +13,7 @@ import androidx.navigation.NavController
 import io.github.katarem.mangacats.components.LambdaManga
 import io.github.katarem.mangacats.components.SearchBar
 import io.github.katarem.mangacats.components.SearchList
-import io.github.katarem.mangacats.dto.MangaDAO
+import io.github.katarem.mangacats.dto.MangaDTO
 import io.github.katarem.mangacats.nav.Routes
 import io.github.katarem.mangacats.utils.Status
 import io.github.katarem.mangacats.viewmodel.SearchViewModel
@@ -22,7 +22,7 @@ import io.github.katarem.mangacats.viewmodel.SearchViewModel
 fun SearchScreen(navController: NavController?, viewModel: SearchViewModel){
     val searchMangas = viewModel.searchMangas.collectAsState()
     val callState = viewModel.status.collectAsState()
-    val onMangaClick : LambdaManga = { manga: MangaDAO ->
+    val onMangaClick : LambdaManga = { manga: MangaDTO ->
         viewModel.setSelectedManga(manga)
         navController?.navigate(Routes.MANGADETAILS)
     }

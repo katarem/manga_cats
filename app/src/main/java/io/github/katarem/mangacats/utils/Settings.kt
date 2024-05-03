@@ -7,26 +7,6 @@ class Settings(context: Context){
 
     private val storage = context.getSharedPreferences("UserPrefs",0)
 
-    fun clearAccount(){
-        storage.edit().putString("username",null).apply()
-        storage.edit().putString("password",null).apply()
-        storage.edit().putString("profileImg",null).apply()
-    }
-
-    fun getUser(): User?{
-        val username = storage.getString("username","").toString()
-        val password = storage.getString("password","").toString()
-        val profileImg = storage.getString("profileImg",null)
-        if(username.isEmpty() || password.isEmpty()) return null
-        return User(username, password, profileImg)
-    }
-
-    fun saveUser(user: User){
-        storage.edit().putString("username",user.username).apply()
-        storage.edit().putString("password",user.password).apply()
-        user.profileImg?.let { storage.edit().putString("profileImg",it).apply() }
-    }
-
     fun getReadingMode(): String{
         return storage.getString("reading_mode","page").toString()
     }

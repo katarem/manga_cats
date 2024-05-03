@@ -1,7 +1,7 @@
 package io.github.katarem.mangacats.dto.auth
 
 import com.google.gson.annotations.SerializedName
-import io.github.katarem.mangacats.dto.MangaDAO
+import io.github.katarem.mangacats.dto.MangaDTO
 
 data class Manga(
     @SerializedName("id") val id: String,
@@ -11,12 +11,12 @@ data class Manga(
     @SerializedName("suscribed") var suscribed: Boolean = false
 ){
 
-    fun fromMangaDAO(mangaDAO: MangaDAO): Manga{
+    fun fromMangaDAO(mangaDTO: MangaDTO): Manga{
         return Manga(
-            id = mangaDAO.id,
-            cover_art = mangaDAO.cover!!,
+            id = mangaDTO.id,
+            cover_art = mangaDTO.cover!!,
             currentChapter = 1,
-            title = mangaDAO.title
+            title = mangaDTO.title
         )
     }
 

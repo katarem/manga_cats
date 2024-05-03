@@ -1,12 +1,9 @@
 package io.github.katarem.mangacats.api
 
 import dto.MDResponse
-import io.github.katarem.mangacats.dto.simple.SimpleMDResponse
-import io.github.katarem.mangacats.dto.MangaDAO
 import io.github.katarem.mangacats.dto.chapter.MDChapterResponse
 import io.github.katarem.mangacats.dto.chapterpages.ChapterPagesResponse
 import io.github.katarem.mangacats.dto.singlemanga.SingleMangaResponse
-import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -14,7 +11,10 @@ import retrofit2.http.Query
 interface MangaDexService {
 
     @GET("manga/{id}")
-    suspend fun getManga(@Path("id") id: String): SingleMangaResponse
+    suspend fun getManga(
+        @Path("id") id: String,
+        @Query("includes[]") includes: List<String> = listOf("cover_art"),
+    ): SingleMangaResponse
 
     @GET("manga")
     suspend fun getMangaByTitle(

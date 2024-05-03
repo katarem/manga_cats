@@ -1,6 +1,5 @@
 package io.github.katarem.mangacats.nav
 
-import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -8,72 +7,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.room.Room
-import io.github.katarem.mangacats.api.Retrofit
 import io.github.katarem.mangacats.components.BottomBar
 import io.github.katarem.mangacats.dao.local.LocalDatabase
-import io.github.katarem.mangacats.dao.local.LocalUser
-import io.github.katarem.mangacats.dto.MangaDAO
 import io.github.katarem.mangacats.screens.CollectionScreen
-import io.github.katarem.mangacats.screens.LoginScreen
 import io.github.katarem.mangacats.screens.MangaDetails
 import io.github.katarem.mangacats.screens.MangaReader
 import io.github.katarem.mangacats.screens.SearchScreen
 import io.github.katarem.mangacats.screens.SettingsScreen
-import io.github.katarem.mangacats.utils.SETTINGS
-import io.github.katarem.mangacats.utils.Status
 import io.github.katarem.mangacats.viewmodel.CollectionViewModel
-import io.github.katarem.mangacats.viewmodel.CredentialsViewModel
-import io.github.katarem.mangacats.viewmodel.DatabaseViewModel
+import io.github.katarem.mangacats.viewmodel.SettingsViewModel
 import io.github.katarem.mangacats.viewmodel.SearchViewModel
 import io.github.katarem.mangacats.viewmodel.ReaderViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import kotlin.time.Duration
 
 @Composable
 fun Router(){
 
     val searchViewModel: SearchViewModel = viewModel()
-    val credentialsViewModel: CredentialsViewModel = viewModel()
+    val settingsViewModel: SettingsViewModel = viewModel()
     val collectionViewModel: CollectionViewModel = viewModel()
     val navController = rememberNavController()
     val readerViewModel: ReaderViewModel = viewModel()
-    lateinit var db: LocalDatabase
-    val dbBuilder = Room.databaseBuilder(
-           LocalContext.current,
-           LocalDatabase::class.java, "mangacats_local"
-       )
-
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO){
-            db = dbBuilder.build()
-            //db.userDao().registerUser(LocalUser("pacogaming","pacogaming","lukaenfadao","https://i.pinimg.com/736x/b9/3b/aa/b93baa0f7783a994392ef05f38dfd5b1.jpg"))
-            Log.d("db-prueba","usuarios = ${db.userDao().getAll()}")
-        }
-    }
-
-//    LaunchedEffect(Unit){
-//        val isLoggedIn = credentialsViewModel.setUser(SETTINGS.getUser())
-//        if(isLoggedIn) {
-//            async {
-//                collectionViewModel.setUser(SETTINGS.getUser()!!)
-//                collectionViewModel.fetchSuscribedMangas()
-//                collectionViewModel.fetchRecentMangas()
-//                credentialsViewModel.setStatus(Status.SUCCESS)
-//            }.await()
-//        }
-//    }
-
+    val mangaService = LocalDatabase.instance.mangaDao()
     Scaffold(
         topBar = {},
         bottomBar = { BottomBar( onScreenChange = {
@@ -83,33 +42,36 @@ fun Router(){
     ){
         NavHost(navController = navController, startDestination = Routes.HOMESCREEN, modifier = Modifier.padding(it)){
             composable(Routes.SETTINGS){
-                SettingsScreen(navController = navController, credentialsViewModel = credentialsViewModel)
+                SettingsScreen(navController = navController, settingsViewModel = settingsViewModel)
             }
             composable(Routes.HOMESCREEN){
                 SearchScreen(navController = navController, viewModel = searchViewModel)
             }
             composable(Routes.COLLECTION){
+                collectionViewModel.fetchMangas()
                 CollectionScreen(navController = navController, vm = collectionViewModel,
                     search = searchViewModel)
+
             }
             composable(Routes.MANGADETAILS){
-                val manga = searchViewModel.manga.collectAsState().value
-                Log.d("Router", "Manga: $manga")
-                MangaDetails(navController, manga, searchViewModel)
+                MangaDetails(navController, searchViewModel)
             }
             composable("${Routes.READER}/{index}"){
                 val index = it.arguments?.getString("index")?.toInt() ?: 0
                 Log.d("toReader","$index")
                 val currentManga = searchViewModel.manga.collectAsState().value!!
                 Log.d("toReader","$currentManga")
+                Log.d("sync","COVER MANGA ROUTER = ${currentManga.cover}")
                 readerViewModel.setManga(currentManga)
                 Log.d("toReader","manga agregado correctamente")
                 readerViewModel.setChapterIndex(index)
+                LaunchedEffect(Dispatchers.IO){
+                    val isSuscribed = mangaService.getSuscribedMangas().firstOrNull { m -> m.uuid == currentManga.id } != null
+                    val localManga = currentManga.toLocalManga(isSuscribed, currentChapter = index)
+                    mangaService.updateManga(localManga)
+                    Log.d("sync","manga actualizado de capitulo: ${localManga.currentChapter}")
+                }
                 MangaReader(navController = navController, readerViewModel = readerViewModel)
-            }
-
-            composable(Routes.LOGIN){
-                LoginScreen(navController = navController, credentialsViewModel = credentialsViewModel)
             }
 
         }
@@ -118,7 +80,6 @@ fun Router(){
 }
 
 object Routes{
-    val LOGIN = "login"
     val HOMESCREEN = "homescreen"
     val COLLECTION = "collection"
     val MANGADETAILS = "mangadetails"

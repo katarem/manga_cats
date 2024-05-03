@@ -1,7 +1,7 @@
 package io.github.katarem.mangacats.dto.simple
 
 import com.google.gson.annotations.SerializedName
-import io.github.katarem.mangacats.dto.MangaDAO
+import io.github.katarem.mangacats.dto.MangaDTO
 
 
 data class SimpleMDResponse (
@@ -15,9 +15,9 @@ data class SimpleMDResponse (
 
 ){
 
-  fun getManga(): MangaDAO{
+  fun getManga(): MangaDTO{
     data.let {
-      return MangaDAO(
+      return MangaDTO(
         it!!.id!!,
         it.attributes!!.title!!.en!!,
         "autor",
