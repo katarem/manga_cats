@@ -8,9 +8,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class LocalUser(
     @PrimaryKey val uuid: String,
-    @ColumnInfo(name = "username") val username: String,
-    @ColumnInfo(name = "password") val password: String,
-    @ColumnInfo(name = "profile_photo") val profilePhoto: String,
-    @Embedded val suscribedMangas: List<LocalManga>,
-    @Embedded val recentMangas: List<LocalManga>
+    val username: String,
+    val password: String,
+    val profilePhoto: String
 )

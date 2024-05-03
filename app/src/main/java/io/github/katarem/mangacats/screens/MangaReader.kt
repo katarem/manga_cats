@@ -3,6 +3,7 @@ package io.github.katarem.mangacats.screens
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,8 +15,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,8 +28,10 @@ import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -44,12 +49,17 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.ImageResult
 import coil.size.Scale
+import com.bumptech.glide.Glide
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.integration.compose.Placeholder
 import io.github.katarem.mangacats.R
 import io.github.katarem.mangacats.nav.Routes
 import io.github.katarem.mangacats.utils.SETTINGS
 import io.github.katarem.mangacats.utils.Status
 import io.github.katarem.mangacats.viewmodel.ReaderViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun MangaReader(navController: NavController?, readerViewModel: ReaderViewModel){
@@ -82,63 +92,80 @@ fun MangaReader(navController: NavController?, readerViewModel: ReaderViewModel)
 }
 
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun ReaderByPage(readerViewModel: ReaderViewModel, modifier: Modifier){
+fun ReaderByPage(readerViewModel: ReaderViewModel, modifier: Modifier) {
     val page = readerViewModel.currentPage.collectAsState()
     Column(
         modifier = modifier
     ) {
-        SubcomposeAsyncImage(
+//        SubcomposeAsyncImage(
+//            model = page.value,
+//            loading = {
+//                CircularProgressIndicator(
+//                    color = MaterialTheme.colorScheme.secondary,
+//                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+//                )
+//            },
+//            contentDescription = "", modifier = Modifier
+//                .weight(3f)
+//                .fillMaxWidth(), contentScale = ContentScale.FillWidth)
+//        ReaderControls(readerViewModel = readerViewModel, modifier = Modifier
+//            .weight(0.3f)
+//            .fillMaxWidth())
+//    }
+        GlideImage(
             model = page.value,
-            loading = {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
-            },
-            contentDescription = "", modifier = Modifier
+            contentDescription = null,
+            modifier = Modifier
                 .weight(3f)
-                .fillMaxWidth(), contentScale = ContentScale.FillWidth)
+                .fillMaxWidth(),
+            contentScale = ContentScale.FillWidth
+        )
         ReaderControls(readerViewModel = readerViewModel, modifier = Modifier
             .weight(0.3f)
-            .fillMaxWidth())
+            .fillMaxWidth(), null)
     }
 }
 
 
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ReaderByCascade(readerViewModel: ReaderViewModel, modifier: Modifier){
-    val pages = readerViewModel.getAllPages()
-    val apiStatus = readerViewModel.status.collectAsState()
+    val pages = readerViewModel.pageUrls.collectAsState()
+    val lazyListState = rememberLazyListState()
     Column(modifier = modifier) {
-        if(apiStatus.value == Status.LOADING)
-            CircularProgressIndicator(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(3f)
-                    .padding(150.dp),
-                color = MaterialTheme.colorScheme.secondary,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-            )
-            else LazyColumn(modifier = Modifier
-            .fillMaxSize()
-            .weight(3f), horizontalAlignment = Alignment.CenterHorizontally){
-                items(pages){
-                    SubcomposeAsyncImage(model = it,
-                        loading = {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.secondary,
-                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                            )
-                        },
-                        contentDescription = "", modifier = Modifier.fillMaxWidth(),
-                        contentScale = ContentScale.FillWidth)
+                    .weight(3f),
+                state = lazyListState,
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                items(pages.value) {
+//                    SubcomposeAsyncImage(model = it,
+//                        loading = {
+//                            CircularProgressIndicator(
+//                                color = MaterialTheme.colorScheme.secondary,
+//                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+//                            )
+//                        },
+//                        contentDescription = "", modifier = Modifier.fillMaxWidth(),
+//                        contentScale = ContentScale.FillWidth)
+//                }
+                    GlideImage(
+                        model = it,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .weight(3f)
+                            .fillMaxWidth(),
+                        contentScale = ContentScale.FillWidth,
+                    )
                 }
             }
         ReaderControls(readerViewModel = readerViewModel, modifier = Modifier
             .weight(0.3f)
-            .fillMaxWidth())
+            .fillMaxWidth(), lazyListState)
     }
 
 
@@ -148,10 +175,11 @@ fun ReaderByCascade(readerViewModel: ReaderViewModel, modifier: Modifier){
 @OptIn(ExperimentalCoilApi::class)
 @SuppressLint("SuspiciousIndentation")
 @Composable
-fun ReaderControls(readerViewModel: ReaderViewModel, modifier: Modifier){
+fun ReaderControls(readerViewModel: ReaderViewModel, modifier: Modifier, scrollState: LazyListState?){
     val isCascade = SETTINGS.getReadingMode() == "cascade"
     val pageIndex = readerViewModel.pageIndex.collectAsState()
     val chapterIndex = readerViewModel.chapterIndex.collectAsState()
+    val coroutine = rememberCoroutineScope()
     val context = LocalContext.current
         Row(
             modifier = modifier,
@@ -162,8 +190,12 @@ fun ReaderControls(readerViewModel: ReaderViewModel, modifier: Modifier){
                 .weight(1f)
                 .fillMaxHeight()
                 .clickable {
-                    context.imageLoader.memoryCache?.clear()
+                    readerViewModel.emptyPages()
                     readerViewModel.setChapterIndex(chapterIndex.value - 1)
+                    coroutine.launch {
+                        scrollState?.scrollToItem(0)
+                        readerViewModel.clearCache(context)
+                    }
                 })
             if(!isCascade){
                 Icon(painter = painterResource(id = R.drawable.arrow_left), contentDescription = null, modifier = Modifier
@@ -181,9 +213,12 @@ fun ReaderControls(readerViewModel: ReaderViewModel, modifier: Modifier){
                 .weight(1f)
                 .fillMaxHeight()
                 .clickable {
-                    context.imageLoader.diskCache?.clear()
-                    context.imageLoader.memoryCache?.clear()
+                    readerViewModel.emptyPages()
                     readerViewModel.setChapterIndex(chapterIndex.value + 1)
+                    coroutine.launch {
+                        scrollState?.scrollToItem(0)
+                        readerViewModel.clearCache(context)
+                    }
                 }
             )
         }

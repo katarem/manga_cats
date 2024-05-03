@@ -2,6 +2,7 @@ package io.github.katarem.mangacats.viewmodel
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.Coil
@@ -9,6 +10,7 @@ import coil.ImageLoader
 import coil.executeBlocking
 import coil.request.ImageRequest
 import coil.request.ImageResult
+import com.bumptech.glide.Glide
 import io.github.katarem.mangacats.api.Retrofit
 import io.github.katarem.mangacats.dto.MangaDAO
 import io.github.katarem.mangacats.dto.chapter.ChapterDTO
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ReaderViewModel : ViewModel(){
 
@@ -37,6 +40,9 @@ class ReaderViewModel : ViewModel(){
     private var _baseUrl = MutableStateFlow("")
     private var _chapterPages = MutableStateFlow(ChapterPages())
     val chapterPages = _chapterPages.asStateFlow()
+
+    private var _pageUrls = MutableStateFlow(listOf<String>())
+    val pageUrls = _pageUrls.asStateFlow()
 
     private var _status = MutableStateFlow(Status.IDLE)
     val status = _status.asStateFlow()
@@ -72,21 +78,28 @@ class ReaderViewModel : ViewModel(){
         }
     }
 
+    fun emptyPages(){
+        _pageUrls.update { emptyList() }
+    }
+
     fun setChapterIndex(newValue: Int){
         if(_status.value != Status.LOADING){
             Log.d("toChapter","$newValue de ${chapters.value.size}")
             if(newValue < chapters.value.size && newValue > -1){
                 viewModelScope.launch {
                     _status.update { Status.LOADING }
-                    async {
                         _chapterIndex.update { newValue }
                         val response = service.getPagesByChapterId(chapters.value[_chapterIndex.value].id!!)
                         Log.d("toChapter","$response")
                         _chapterPages.update { response.chapterPages!! }
                         _baseUrl.update { response.baseUrl!! }
-                        _pageIndex.update { 0 }
-                        getLink()
-                    }.await()
+                        if(SETTINGS.getReadingMode() == "cascade") {
+                            _pageUrls.update { getAllPages() }
+                        }
+                        else {
+                            _pageIndex.update { 0 }
+                            getLink()
+                        }
                     _status.update { Status.SUCCESS }
                 }
             }
@@ -118,8 +131,20 @@ class ReaderViewModel : ViewModel(){
         viewModelScope.launch {
             pages = deferredResult.await()
         }
-
+        Log.d("glide", "me cargué")
         return pages
+    }
+
+    fun clearCache(context: Context){
+        viewModelScope.launch {
+            // Para limpiar la caché en memoria
+            Glide.get(context).clearMemory()
+            withContext(Dispatchers.IO){
+                // Para limpiar la caché en disco
+                Glide.get(context).clearDiskCache()
+
+            }
+        }
     }
 
 

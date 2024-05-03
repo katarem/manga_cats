@@ -17,6 +17,7 @@ import androidx.room.Room
 import io.github.katarem.mangacats.api.Retrofit
 import io.github.katarem.mangacats.components.BottomBar
 import io.github.katarem.mangacats.dao.local.LocalDatabase
+import io.github.katarem.mangacats.dao.local.LocalUser
 import io.github.katarem.mangacats.dto.MangaDAO
 import io.github.katarem.mangacats.screens.CollectionScreen
 import io.github.katarem.mangacats.screens.LoginScreen
@@ -28,12 +29,15 @@ import io.github.katarem.mangacats.utils.SETTINGS
 import io.github.katarem.mangacats.utils.Status
 import io.github.katarem.mangacats.viewmodel.CollectionViewModel
 import io.github.katarem.mangacats.viewmodel.CredentialsViewModel
+import io.github.katarem.mangacats.viewmodel.DatabaseViewModel
 import io.github.katarem.mangacats.viewmodel.SearchViewModel
 import io.github.katarem.mangacats.viewmodel.ReaderViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlin.time.Duration
 
 @Composable
@@ -44,12 +48,19 @@ fun Router(){
     val collectionViewModel: CollectionViewModel = viewModel()
     val navController = rememberNavController()
     val readerViewModel: ReaderViewModel = viewModel()
+    lateinit var db: LocalDatabase
+    val dbBuilder = Room.databaseBuilder(
+           LocalContext.current,
+           LocalDatabase::class.java, "mangacats_local"
+       )
 
-    val db = Room.databaseBuilder(
-        LocalContext.current,
-        LocalDatabase::class.java, "mangacats_local"
-    ).build()
-
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO){
+            db = dbBuilder.build()
+            //db.userDao().registerUser(LocalUser("pacogaming","pacogaming","lukaenfadao","https://i.pinimg.com/736x/b9/3b/aa/b93baa0f7783a994392ef05f38dfd5b1.jpg"))
+            Log.d("db-prueba","usuarios = ${db.userDao().getAll()}")
+        }
+    }
 
 //    LaunchedEffect(Unit){
 //        val isLoggedIn = credentialsViewModel.setUser(SETTINGS.getUser())
