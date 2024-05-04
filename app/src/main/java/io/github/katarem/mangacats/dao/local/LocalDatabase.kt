@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [LocalManga::class], version = 1)
+@Database(entities = [LocalManga::class], version = 2)
 abstract class LocalDatabase : RoomDatabase() {
     abstract fun mangaDao(): MangaDao
 
@@ -14,7 +14,8 @@ abstract class LocalDatabase : RoomDatabase() {
         lateinit var instance: LocalDatabase
 
         fun createInstance(context: Context){
-            instance = Room.databaseBuilder(context, LocalDatabase::class.java, "mangacats_local").build()
+            instance = Room.databaseBuilder(context, LocalDatabase::class.java, "mangacats_local")
+                .fallbackToDestructiveMigration().build()
         }
 
     }

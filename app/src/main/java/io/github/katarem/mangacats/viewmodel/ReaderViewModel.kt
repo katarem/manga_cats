@@ -52,7 +52,7 @@ class ReaderViewModel : ViewModel(){
 
     fun pageForward(){
         viewModelScope.launch {
-            if( _pageIndex.value < _chapterPages.value.data.size){
+            if( _pageIndex.value < _chapterPages.value.data.size - 1){
                 _pageIndex.value += 1
                 getLink()
             }

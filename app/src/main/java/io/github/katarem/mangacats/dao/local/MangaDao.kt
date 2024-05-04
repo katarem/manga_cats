@@ -11,10 +11,10 @@ import androidx.room.Upsert
 interface MangaDao {
     @Query("SELECT * FROM LocalManga")
     fun getAll(): List<LocalManga>
-    @Query("SELECT * FROM LocalManga l WHERE l.suscribed = TRUE")
+    @Query("SELECT * FROM LocalManga WHERE suscribed = 1")
     suspend fun getSuscribedMangas(): List<LocalManga>
 
-    @Query("SELECT * FROM LocalManga l WHERE l.suscribed = FALSE")
+    @Query("SELECT * FROM LocalManga WHERE suscribed = 0")
     suspend fun getRecentMangas(): List<LocalManga>
     @Upsert
     suspend fun updateManga(manga: LocalManga)
@@ -24,10 +24,10 @@ interface MangaDao {
     @Query("DELETE FROM LocalManga")
     suspend fun deleteAllMangas()
 
-    @Query("DELETE FROM LocalManga WHERE suscribed = TRUE")
+    @Query("DELETE FROM LocalManga WHERE suscribed = 1")
     suspend fun deleteAllSuscribedMangas()
 
-    @Query("DELETE FROM LocalManga WHERE suscribed = FALSE")
+    @Query("DELETE FROM LocalManga WHERE suscribed = 0")
     suspend fun deleteAllRecentMangas()
 
 }

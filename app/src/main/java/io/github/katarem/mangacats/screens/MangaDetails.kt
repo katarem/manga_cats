@@ -1,6 +1,7 @@
 package io.github.katarem.mangacats.screens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
@@ -29,6 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,6 +57,20 @@ typealias LambdaChapter = (Int) -> Unit
 fun MangaDetails(navController: NavController?, viewModel: SearchViewModel) {
     val manga = viewModel.manga.collectAsState()
     val scrollState = rememberScrollState()
+    val callState = viewModel.status.collectAsState()
+    val errorMessage = viewModel.errorMessage.collectAsState()
+    val context = LocalContext.current
+
+    if(callState.value == Status.ERROR){
+        LaunchedEffect(Unit){
+            Log.d("toast","me ejecuto mangadetails")
+            Toast.makeText(context,errorMessage.value, Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+
+
     manga.value?.let {
         LaunchedEffect(Dispatchers.IO) {
             viewModel.getChapters(it.id)

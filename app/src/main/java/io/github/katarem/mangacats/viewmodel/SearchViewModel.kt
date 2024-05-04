@@ -1,6 +1,8 @@
 package io.github.katarem.mangacats.viewmodel
 
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.katarem.mangacats.MainActivity
@@ -32,6 +34,9 @@ class SearchViewModel:ViewModel() {
     private var _status = MutableStateFlow(Status.LOADING)
     val status = _status.asStateFlow()
 
+    private var _errorMessage = MutableStateFlow("")
+    val errorMessage = _errorMessage.asStateFlow()
+
     private var _manga = MutableStateFlow(null as MangaDTO?)
     val manga = _manga.asStateFlow()
 
@@ -40,6 +45,10 @@ class SearchViewModel:ViewModel() {
 
     fun changeSuscribedState(newState: Boolean){
         _isSuscribed.update { newState }
+    }
+
+    fun resetStatus(){
+        _status.update { Status.IDLE }
     }
 
     fun setSelectedManga(manga: MangaDTO){
@@ -100,7 +109,9 @@ class SearchViewModel:ViewModel() {
             _status.update { Status.SUCCESS }
             Log.d("getChapters", "capitulos obtenidos!")
         } catch (ex: Exception) {
-            Log.d("error", "sucedio un error")
+            Log.d("getChapters", "ERROR: $ex")
+            _errorMessage.update { "Ha ocurrido un error en la obtención de capítulos" }
+            _status.update { Status.ERROR }
         }
     }
 
@@ -148,6 +159,8 @@ class SearchViewModel:ViewModel() {
                 Log.d("getChapters", "capitulos obtenidos!")
             } catch (ex: Exception) {
                 Log.d("error", "sucedio un error")
+                _errorMessage.update { "Ha ocurrido un error en la obtención de capitulos" }
+                _status.update { Status.ERROR }
             }
         }
     }
@@ -171,14 +184,16 @@ class SearchViewModel:ViewModel() {
     fun searchMangas(title: String){
         viewModelScope.launch {
             try{
-                _status.value = Status.LOADING
+                _status.update { Status.LOADING }
                 val response = service.getMangaByTitle(title = title, lang = listOf(SETTINGS.getMangaLang()))
-                Log.d("searchMangas","$response")
+                //Log.d("searchMangas","$response")
                 _searchMangas.update { response.getMangaList() }
-                _status.value = Status.SUCCESS
+                _status.update { Status.SUCCESS }
             } catch(ex: Exception){
                 ex.printStackTrace()
                 Log.d("searchMangas","$ex")
+                _errorMessage.update { "Ha ocurrido un error en la obtención de mangas" }
+                _status.update { Status.ERROR }
             }
         }
     }
