@@ -1,10 +1,8 @@
-package io.github.katarem.mangacats.dao.local
+package io.github.katarem.mangacats.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
-import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Update
 import androidx.room.Upsert
 
 @Dao

@@ -1,4 +1,4 @@
-package io.github.katarem.mangacats.dao.local
+package io.github.katarem.mangacats.dao
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

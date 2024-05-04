@@ -1,23 +1,10 @@
 package io.github.katarem.mangacats.viewmodel
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
-import io.github.katarem.mangacats.MainActivity
-import io.github.katarem.mangacats.api.Retrofit
-import io.github.katarem.mangacats.dao.local.LocalDatabase
-import io.github.katarem.mangacats.dao.local.LocalManga
-import io.github.katarem.mangacats.dto.auth.Manga
-import io.github.katarem.mangacats.dto.auth.User
-import io.github.katarem.mangacats.nav.Routes
-import io.github.katarem.mangacats.utils.Status
-import kotlinx.coroutines.Deferred
+import io.github.katarem.mangacats.dao.LocalDatabase
+import io.github.katarem.mangacats.dao.LocalManga
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

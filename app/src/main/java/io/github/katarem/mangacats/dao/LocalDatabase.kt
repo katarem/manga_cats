@@ -1,4 +1,4 @@
-package io.github.katarem.mangacats.dao.local
+package io.github.katarem.mangacats.dao
 
 import android.content.Context
 import androidx.room.Database

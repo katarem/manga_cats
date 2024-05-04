@@ -12,7 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.github.katarem.mangacats.components.BottomBar
-import io.github.katarem.mangacats.dao.local.LocalDatabase
+import io.github.katarem.mangacats.dao.LocalDatabase
 import io.github.katarem.mangacats.screens.CollectionScreen
 import io.github.katarem.mangacats.screens.MangaDetails
 import io.github.katarem.mangacats.screens.MangaReader

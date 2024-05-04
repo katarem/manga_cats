@@ -1,13 +1,10 @@
 package io.github.katarem.mangacats.viewmodel
 
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.katarem.mangacats.MainActivity
 import io.github.katarem.mangacats.api.Retrofit
-import io.github.katarem.mangacats.dao.local.LocalDatabase
+import io.github.katarem.mangacats.dao.LocalDatabase
 import io.github.katarem.mangacats.dto.MangaDTO
 import io.github.katarem.mangacats.dto.chapter.ChapterDTO
 import io.github.katarem.mangacats.utils.SETTINGS

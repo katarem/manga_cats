@@ -1,7 +1,7 @@
 package io.github.katarem.mangacats.dto
 
 import com.google.gson.annotations.SerializedName
-import io.github.katarem.mangacats.dao.local.LocalManga
+import io.github.katarem.mangacats.dao.LocalManga
 import io.github.katarem.mangacats.dto.chapter.ChapterDTO
 
 data class MangaDTO(
@@ -14,7 +14,7 @@ data class MangaDTO(
     var chapters: MutableList<ChapterDTO> = mutableListOf()
 ){
 
-    fun toLocalManga(suscribed: Boolean, currentChapter: Int = 0): LocalManga{
+    fun toLocalManga(suscribed: Boolean, currentChapter: Int = 0): LocalManga {
         return LocalManga(
             uuid = id,
             title = title,

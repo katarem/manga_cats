@@ -17,14 +17,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -39,11 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import io.github.katarem.mangacats.MainActivity
 import io.github.katarem.mangacats.R
 import io.github.katarem.mangacats.components.DisplayButton
-import io.github.katarem.mangacats.dao.local.LocalDatabase
-import io.github.katarem.mangacats.dto.MangaDTO
+import io.github.katarem.mangacats.dao.LocalDatabase
 import io.github.katarem.mangacats.dto.chapter.ChapterDTO
 import io.github.katarem.mangacats.nav.Routes
 import io.github.katarem.mangacats.utils.Status
