@@ -63,6 +63,7 @@ fun SearchBar(onSearch: LambdaString = {}){
             trailingIcon = {
                 Icon(
                     Icons.Filled.Search,
+                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
                     contentDescription = "",
                     modifier = Modifier.clickable{ onSearch(search.value) }
                 ) },
@@ -149,7 +150,7 @@ fun OnDisplay(content: @Composable () -> Unit, onClick: () -> Unit){
             content()
         }
         Icon(painter = painterResource(id = R.drawable.baseline_arrow_drop_up_24), contentDescription = "", modifier = Modifier
-            .weight(0.15f)
+            .weight(0.05f)
             .fillMaxWidth()
             .clickable { onClick() })
     }
@@ -192,48 +193,3 @@ fun BottomBar(onScreenChange: LambdaString){
             .clickable { onScreenChange(Routes.SETTINGS) })
     }
 }
-
-@Composable
-fun CustomTextField(value: String, onValueChange: LambdaString, modifier: Modifier = Modifier.fillMaxWidth(), painter: Painter?, placeholder: String?, visualTransformation: VisualTransformation? = null){
-    TextField(value = value, onValueChange = onValueChange, placeholder = { placeholder?.let{ Text(text = it)} },
-        colors = OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-        unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-        focusedBorderColor = Color.Transparent,
-        unfocusedBorderColor = Color.Transparent,
-    ),
-        singleLine = true,
-        shape = RoundedCornerShape(20.dp),
-        modifier = modifier,
-        trailingIcon = { painter?.let { Icon(painter = it, contentDescription = null) } },
-        visualTransformation = visualTransformation?: VisualTransformation.None
-    )
-}
-
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun BottomBarPreview(){
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        BottomBar(onScreenChange = {})
-    }
-}
-
-
-
-//@Composable
-//@Preview(showBackground = true, showSystemUi = true)
-//fun SearchItemPreview(){
-//    SearchItemTest(MangaDAO("a1c7c817-4e59-43b7-9365-09675a149a6f", "One Piece", "autor", "description", "cover"), painterResource(id = R.drawable.manga_prueba),{})
-//}
-
-
-
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable
-//fun SearchBarPreview(){
-//    SearchBar()
-//}

@@ -7,7 +7,7 @@ data class Attributes (
 
   @SerializedName("title"                          ) var title                          : Title?               = Title(),
   @SerializedName("altTitles"                      ) var altTitles                      : ArrayList<AltTitles> = arrayListOf(),
-  @SerializedName("description"                    ) var description                    : Description?         = Description(),
+  @SerializedName("description"                    ) var description                    : Map<String, String>  = mapOf(),
   @SerializedName("externalUrl"                    ) var externalUrl                    : String?              = null,
   @SerializedName("isLocked"                       ) var isLocked                       : Boolean?             = null,
   @SerializedName("links"                          ) var links                          : Links?               = Links(),

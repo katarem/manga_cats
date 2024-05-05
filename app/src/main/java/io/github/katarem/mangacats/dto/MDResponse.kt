@@ -25,7 +25,7 @@ data class MDResponse (
         id = id,
         title = dataInfo.attributes!!.title!!.en?:dataInfo.attributes!!.title!!.jp?:"[NOT RECOGNISED TITLE]",
         author = "autor",
-        description = dataInfo.attributes!!.description!!.toString(),
+        description = dataInfo.attributes!!.description,
         cover_id = coverId,
         cover = cover
       )

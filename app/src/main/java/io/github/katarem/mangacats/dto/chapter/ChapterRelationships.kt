@@ -2,7 +2,6 @@ package io.github.katarem.mangacats.dto.chapter
 
 import com.google.gson.annotations.SerializedName
 import dto.Attributes
-import dto.SimpleMDAttributes
 
 data class ChapterRelationships (
 

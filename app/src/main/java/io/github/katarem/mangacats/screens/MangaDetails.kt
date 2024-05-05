@@ -46,6 +46,7 @@ import io.github.katarem.mangacats.utils.Status
 import io.github.katarem.mangacats.viewmodel.SearchViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.internal.trimSubstring
 
 typealias LambdaChapter = (Int) -> Unit
 
@@ -56,7 +57,7 @@ fun MangaDetails(navController: NavController?, viewModel: SearchViewModel) {
     val callState = viewModel.status.collectAsState()
     val errorMessage = viewModel.errorMessage.collectAsState()
     val context = LocalContext.current
-
+    Log.d("idManga","manga con id ${manga.value?.id}")
     if(callState.value == Status.ERROR){
         LaunchedEffect(Unit){
             Log.d("toast","me ejecuto mangadetails")
@@ -131,7 +132,7 @@ fun MangaDetails(navController: NavController?, viewModel: SearchViewModel) {
                             .clickable { onLikedEvent() })
                 }
                 Log.d("isSuscribed", "suscrito = ${isSuscribed.value}")
-                DescriptionToggle(description = manga.value?.description ?: "<empty description>")
+                DescriptionToggle(description = manga.value!!.description["en"] ?: "<empty description>")
                 Log.d("MangaDetails", "estado: ${status.value}")
                 if (status.value == Status.SUCCESS)
                     ChaptersToggle(chapters = chapters.value) {
@@ -184,17 +185,11 @@ fun ChapterItem(chapter: ChapterDTO, index: Int, onSelect: LambdaChapter) {
 fun DescriptionToggle(description: String) {
 
     val summaryComponent = @Composable() {
-        val summaryList = description.split(".")
+        val summary = description
+            .replace("Description(en=","")
+            .replace(")","")
+            .substringBefore(",")
 
-        val summary = if (summaryList.size > 2)
-            summaryList.subList(0, 3).toString()
-                .replace("Description(en=", "")
-                .replace("[", "")
-                .replace("]", "") + "."
-        else summaryList.subList(0, summaryList.size).toString()
-            .replace("Description(en=", "")
-            .replace("[", "")
-            .replace("]", "") + "."
         Text(
             text = summary,
             textAlign = TextAlign.Justify,

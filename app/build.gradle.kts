@@ -100,7 +100,10 @@ dependencies {
     kapt("androidx.room:room-compiler:$room_version")
 
 
+    // google fonts
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.7")
 
+    //glide
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
 
     //tests
