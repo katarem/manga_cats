@@ -41,6 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import coil.compose.AsyncImage
 import io.github.katarem.mangacats.R
 import io.github.katarem.mangacats.dto.MangaDTO
@@ -116,7 +118,7 @@ fun SearchItem(manga: MangaDTO, onClick: LambdaManga){
             )
             Text(
                 text = manga.title,
-                modifier = Modifier.weight(2f),
+                modifier = Modifier.weight(2f).padding(5.dp),
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center
             )
@@ -150,7 +152,7 @@ fun OnDisplay(content: @Composable () -> Unit, onClick: () -> Unit){
             content()
         }
         Icon(painter = painterResource(id = R.drawable.baseline_arrow_drop_up_24), contentDescription = "", modifier = Modifier
-            .weight(0.05f)
+            .weight(0.15f)
             .fillMaxWidth()
             .clickable { onClick() })
     }

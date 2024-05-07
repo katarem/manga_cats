@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -66,20 +67,21 @@ fun MangaDetails(navController: NavController?, viewModel: SearchViewModel) {
         }
     }
 
-
-
     manga.value?.let {
+
         LaunchedEffect(Dispatchers.IO) {
             viewModel.getChapters(it.id)
             val isNull = LocalDatabase.instance.mangaDao()
                 .getSuscribedMangas().firstOrNull { s -> s.uuid == it.id } != null
             viewModel.changeSuscribedState(isNull)
         }
+
         val isSuscribed = viewModel.isSuscribed.collectAsState()
         val status = viewModel.status.collectAsState()
         val chapters = viewModel.chapters.collectAsState()
         val selectedChapter = remember { mutableIntStateOf(-1) }
         val coroutine = rememberCoroutineScope()
+
         val onLikedEvent: () -> Unit = {
             viewModel.changeSuscribedState(!isSuscribed.value)
             coroutine.launch(Dispatchers.IO) {
@@ -91,10 +93,15 @@ fun MangaDetails(navController: NavController?, viewModel: SearchViewModel) {
                 }
             }
         }
+
         if (selectedChapter.intValue != -1) {
             Log.d("toReader", "voy al capitulo ${selectedChapter.intValue}")
             navController?.navigate("${Routes.READER}/${selectedChapter.intValue}")
         }
+
+        val titleSize = if(manga.value?.title?.length!! > 60) 15.sp
+                        else if(manga.value?.title?.length!! > 25) 25.sp
+                        else 35.sp
 
         Column(
             modifier = Modifier
@@ -116,7 +123,7 @@ fun MangaDetails(navController: NavController?, viewModel: SearchViewModel) {
             ) {
                 Text(
                     text = manga.value?.title ?: "[NO TITLE]",
-                    fontSize = 35.sp,
+                    fontSize = titleSize,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -183,17 +190,17 @@ fun ChapterItem(chapter: ChapterDTO, index: Int, onSelect: LambdaChapter) {
 
 @Composable
 fun DescriptionToggle(description: String) {
-
+    val scrollState = rememberScrollState()
     val summaryComponent = @Composable() {
-        val summary = description
-            .replace("Description(en=","")
-            .replace(")","")
-            .substringBefore(",")
-
-        Text(
-            text = summary,
-            textAlign = TextAlign.Justify,
-        )
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+            .verticalScroll(scrollState)){
+            Text(
+                text = description,
+                textAlign = TextAlign.Justify,
+            )
+        }
     }
     DisplayButton(
         onDisplay = summaryComponent,

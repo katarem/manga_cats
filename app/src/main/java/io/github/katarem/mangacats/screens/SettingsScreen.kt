@@ -120,7 +120,7 @@ lang, onClick ->
     ) {
         Text(
             text = lang.name.replace('_', ' '),
-            fontSize = 14.sp,
+            fontSize = 11.sp,
             modifier = Modifier
                 .padding(10.dp)
                 .weight(1f),

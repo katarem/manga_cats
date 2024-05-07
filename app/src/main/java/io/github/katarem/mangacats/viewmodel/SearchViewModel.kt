@@ -130,7 +130,7 @@ class SearchViewModel:ViewModel() {
                 response.data.forEach { chaptersList.add(it) }
                 Log.d(
                     "fetchCOLLECTION",
-                    "me quedan capitulos por obtener, voy por el $limit y me quedan $difference"
+                    "me quedan capitulos por obtener, voy por el $limit y me quedan $difference, en total hay $total"
                 )
                 if (difference > 0) {
                     for (i in 0..2) {
@@ -155,7 +155,7 @@ class SearchViewModel:ViewModel() {
                 _status.update { Status.SUCCESS }
                 Log.d("getChapters", "capitulos obtenidos!")
             } catch (ex: Exception) {
-                Log.d("error", "sucedio un error")
+                Log.d("error", "sucedio un error: $ex")
                 _errorMessage.update { "Ha ocurrido un error en la obtención de capitulos" }
                 _status.update { Status.ERROR }
             }

@@ -41,7 +41,7 @@ class ReaderViewModel : ViewModel(){
     private var _pageIndex = MutableStateFlow(0)
     val pageIndex = _pageIndex.asStateFlow()
 
-    private var _chapterIndex = MutableStateFlow(0)
+    private var _chapterIndex = MutableStateFlow(-1)
     val chapterIndex = _chapterIndex.asStateFlow()
 
     private var _currentPage = MutableStateFlow("")

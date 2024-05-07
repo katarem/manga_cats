@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.katarem.mangacats.dao.LocalDatabase
 import io.github.katarem.mangacats.dao.LocalManga
+import io.github.katarem.mangacats.dto.auth.Manga
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -34,31 +36,10 @@ class CollectionViewModel : ViewModel() {
         }
     }
 
-    private fun fetchSuscribedMangas(){
-       viewModelScope.launch {
-           _suscribedMangas.update { service.getSuscribedMangas() }
-       }
-    }
-
-    private fun fetchRecentMangas(){
+    fun deleteManga(manga: LocalManga){
         viewModelScope.launch {
-            _suscribedMangas.update { service.getRecentMangas() }
-        }
-    }
-
-    fun updateManga(manga: LocalManga){
-        viewModelScope.launch{
-            service.updateManga(manga)
-            fetchRecentMangas()
-            fetchSuscribedMangas()
-        }
-    }
-
-    fun removeManga(manga: LocalManga){
-        viewModelScope.launch {
-            service.deleteManga(manga)
-            fetchRecentMangas()
-            fetchSuscribedMangas()
+            async { service.deleteManga(manga) }.join()
+            fetchMangas()
         }
     }
 

@@ -40,6 +40,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -55,8 +57,10 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun MangaReader(navController: NavController?, readerViewModel: ReaderViewModel) {
+
+
     val isCascade = SETTINGS.getReadingMode() == "cascade"
-    val chapterIndex = readerViewModel.chapterIndex.collectAsState()
+    val chapterIndex = readerViewModel.chapterIndex.collectAsStateWithLifecycle()
     Log.d("reader", "cap ${chapterIndex.value}")
     Column(
         modifier = Modifier
@@ -95,7 +99,7 @@ fun MangaReader(navController: NavController?, readerViewModel: ReaderViewModel)
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ReaderByPage(readerViewModel: ReaderViewModel, modifier: Modifier) {
-    val page = readerViewModel.currentPage.collectAsState()
+    val page = readerViewModel.currentPage.collectAsStateWithLifecycle()
     var scale by remember { mutableStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
@@ -135,7 +139,7 @@ fun ReaderByPage(readerViewModel: ReaderViewModel, modifier: Modifier) {
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ReaderByCascade(readerViewModel: ReaderViewModel, modifier: Modifier) {
-    val pages = readerViewModel.pageUrls.collectAsState()
+    val pages = readerViewModel.pageUrls.collectAsStateWithLifecycle()
     val lazyListState = rememberLazyListState()
 
     Column(modifier = modifier) {
@@ -206,8 +210,8 @@ fun ReaderControls(
 ) {
     val mangaService = LocalDatabase.instance.mangaDao()
     val isCascade = SETTINGS.getReadingMode() == "cascade"
-    val pageIndex = readerViewModel.pageIndex.collectAsState()
-    val chapterIndex = readerViewModel.chapterIndex.collectAsState()
+    val pageIndex = readerViewModel.pageIndex.collectAsStateWithLifecycle()
+    val chapterIndex = readerViewModel.chapterIndex.collectAsStateWithLifecycle()
     val coroutine = rememberCoroutineScope()
     val context = LocalContext.current
     LaunchedEffect(Dispatchers.Main) {

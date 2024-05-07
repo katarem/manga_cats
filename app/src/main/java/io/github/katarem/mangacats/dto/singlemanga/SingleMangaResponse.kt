@@ -19,7 +19,7 @@ data class SingleMangaResponse(
                 id = id,
                 title = dataInfo.attributes!!.title!!.en?:dataInfo.attributes!!.title!!.jp?:"[NOT RECOGNISED TITLE]",
                 author = "autor",
-                description = dataInfo.attributes!!.description!!.toString(),
+                description = dataInfo.attributes!!.description,
             )
         }
     }

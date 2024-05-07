@@ -1,8 +1,10 @@
 package io.github.katarem.mangacats.screens
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +32,8 @@ import io.github.katarem.mangacats.nav.Routes
 import io.github.katarem.mangacats.utils.SETTINGS
 import io.github.katarem.mangacats.viewmodel.CollectionViewModel
 import io.github.katarem.mangacats.viewmodel.SearchViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 
 typealias LambdaManga = (LocalManga) -> Unit
@@ -40,7 +44,16 @@ fun CollectionScreen(navController: NavController?, vm: CollectionViewModel, sea
     val suscribedMangas = vm.suscribedMangas.collectAsState()
     val recentMangas = vm.recentMangas.collectAsState()
 
-    val selectedLang = SETTINGS.getMangaLang()
+    val onMangaClick: LambdaManga = { recent ->
+        coroutineScope.launch {
+            search.getManga(recent.uuid).await()
+            search.getChaptersAsync(recent.uuid).await()
+            Log.d("toReaderIndex", "navegando a ${Routes.READER}/${recent.currentChapter}")
+            navController?.navigate("${Routes.READER}/${recent.currentChapter}")
+        }
+    }
+
+    val onMangaLongPress: LambdaManga = { manga -> vm.deleteManga(manga) }
 
     Column(
         modifier = Modifier
@@ -50,13 +63,7 @@ fun CollectionScreen(navController: NavController?, vm: CollectionViewModel, sea
         Text(text = "Your Recent Mangas", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             LazyRow{
                 items(recentMangas.value.asReversed()){
-                    MangaItem(modifier = Modifier.weight(1f),manga = it){recent ->
-                        coroutineScope.launch {
-                            search.getManga(recent.uuid).await()
-                            search.getChaptersAsync(recent.uuid).await()
-                            navController?.navigate("${Routes.READER}/${recent.currentChapter}")
-                        }
-                    }
+                    MangaItem(modifier = Modifier.weight(1f),manga = it, onClick = {manga -> onMangaClick(manga)}, onLongPress = {manga -> onMangaLongPress(manga) })
                 }
             }
         if(recentMangas.value.isEmpty())
@@ -64,13 +71,7 @@ fun CollectionScreen(navController: NavController?, vm: CollectionViewModel, sea
         Text(text = "Your Liked Mangas", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             LazyRow{
                 items(suscribedMangas.value.asReversed()){
-                    MangaItem(modifier = Modifier.weight(1f),manga = it){suscribed ->
-                        coroutineScope.launch {
-                            search.getManga(suscribed.uuid).await()
-                            search.getChaptersAsync(suscribed.uuid).await()
-                            navController?.navigate("${Routes.READER}/${suscribed.currentChapter}")
-                        }
-                    }
+                    MangaItem(modifier = Modifier.weight(1f),manga = it, onClick = {manga -> onMangaClick(manga)}, onLongPress = {manga -> onMangaLongPress(manga) })
                 }
             }
         if(suscribedMangas.value.isEmpty())
@@ -79,16 +80,20 @@ fun CollectionScreen(navController: NavController?, vm: CollectionViewModel, sea
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MangaItem(modifier: Modifier, manga: LocalManga, onClick: LambdaManga){
+fun MangaItem(modifier: Modifier, manga: LocalManga, onClick: LambdaManga, onLongPress: LambdaManga){
     Column(
         modifier = modifier
             .padding(10.dp)
-            .clickable { onClick(manga) },
+            .combinedClickable(
+                onClick = { onClick(manga)},
+                onLongClick = { onLongPress(manga) }
+            ),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Log.d("cover", "${manga.cover_art}")
+        Log.d("cover", manga.cover_art)
         AsyncImage(model = manga.cover_art, contentDescription = "", modifier = Modifier
             .height(240.dp)
             .width(180.dp)
